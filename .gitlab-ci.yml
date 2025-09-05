@@ -38,7 +38,7 @@ build-and-push:
   stage: build-and-push
   script:
     - |
-      docker build -t "$IMAGE_REPO:$IMAGE_TAG" -t "$IMAGE_REPO:latest" .
+      docker build --platform linux/arm64 -t "$IMAGE_REPO:$IMAGE_TAG" -t "$IMAGE_REPO:latest" .
     - |
         if [ "$CI_COMMIT_REF_SLUG" == "development" ]; then
           docker push "$IMAGE_REPO:$IMAGE_TAG"
