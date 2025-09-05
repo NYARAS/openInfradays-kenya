@@ -1,0 +1,50 @@
+image: docker:26.1.1
+
+stages:
+  - build-and-push
+
+# We need dind as we are building docker container within docker container
+services:
+  - docker:26.1.1-dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  TERRAFORM_VERSION: 1.5.3
+  VAULT_VERSION: 1.13.1
+  APP_NAME: demoapp
+  IMAGE_REPO: 167259143853.dkr.ecr.eu-west-1.amazonaws.com/openinfra/demoapp
+  IMAGE_TAG: "$CI_COMMIT_REF_SLUG.$CI_COMMIT_SHA"
+  TF_VAR_pipeline_vault_role: argocd-helper-pipeline
+  TF_VAR_pipeline_vault_backend: argocd-helper-aws
+
+# Anchor setup of k8s access
+.vault_auth: &vault_auth
+  image: devopscalvine/infrastructure-helm3:0.0.6
+  id_tokens:
+   VAULT_ID_TOKEN:
+    aud: $VAULT_ADDR
+  before_script:
+    - export VAULT_TOKEN="$(vault write -field=token auth/jwt/login role=$TF_VAR_pipeline_vault_role jwt=$VAULT_ID_TOKEN)"
+    - vault token lookup
+    - vault write -format=json auth/jwt/login role=argocd-helper-pipeline jwt=$VAULT_ID_TOKEN | jq -r
+    - vault read -format=json $TF_VAR_pipeline_vault_backend/sts/$TF_VAR_pipeline_vault_role | jq -r '.data'
+    - eval $(vault read -format json $TF_VAR_pipeline_vault_backend/sts/$TF_VAR_pipeline_vault_role | jq -r '.data | "export AWS_ACCESS_KEY_ID=\(.access_key)\nexport AWS_SECRET_ACCESS_KEY=\(.secret_key)\nexport AWS_SESSION_TOKEN=\(.security_token)"')
+    - aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 167259143853.dkr.ecr.eu-west-1.amazonaws.com
+
+build-and-push:
+  <<: *vault_auth
+  stage: build-and-push
+  script:
+    - |
+      docker build -t "$IMAGE_REPO:$IMAGE_TAG" -t "$IMAGE_REPO:latest" .
+    - |
+        if [ "$CI_COMMIT_REF_SLUG" == "development" ]; then
+          docker push "$IMAGE_REPO:$IMAGE_TAG"
+        fi
+    - |
+        if [ "$CI_COMMIT_REF_SLUG" == "main" ]; then
+          docker push "$IMAGE_REPO:$IMAGE_TAG"
+          docker push "$IMAGE_REPO:latest"
+        fi
