@@ -24,8 +24,6 @@ spec:
         app: {{ template "app.fullname" . }}
         chart: {{ .Chart.Name }}--{{ .Chart.Version | replace "+" "_" }}
     spec:
-      nodeSelector:
-        purpose: general-services
       containers:
       - name: {{ template "app.fullname" . }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
