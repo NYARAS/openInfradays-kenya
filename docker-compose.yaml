@@ -1,0 +1,42 @@
+services:
+  db:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      PGDATA: /data/postgres
+      POSTGRES_DB: user
+    volumes:
+      - db:/data/postgres
+    ports:
+      - "5332:5432"
+    networks:
+      - db
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d postgres" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  app:
+    container_name: demoapp
+    image: devopscalvine/openinfrademoapp:0.0.1
+    platform: linux/amd64
+    environment:
+      DB_USER: demo
+      DB_PASSWORD: demo
+      DB_HOST: host.docker.internal
+    ports:
+      - "8000:8000"
+    networks:
+      - app
+    restart: unless-stopped
+networks:
+  db:
+    driver: bridge
+  app:
+    driver: bridge
+
+volumes:
+  db:

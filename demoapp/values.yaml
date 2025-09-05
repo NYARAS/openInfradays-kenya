@@ -1,0 +1,23 @@
+image:
+  repository: europe-west4-docker.pkg.dev/nsw-production-environment/rabbitmq-exporter/rabbitmq-exporter
+  tag: latest
+  pullPolicy: IfNotPresent
+namespace: placeholder
+spec:
+  replicas: 1
+  terminationGracePeriodSeconds: 0
+resources:
+  requests:
+    cpu: "200m"
+    memory: "100Mi"
+  limits:
+    cpu: "200m"
+    memory: "100Mi"
+env:
+  DB_PORT: placeholder
+
+service:
+  name: demoapp
+  type: ClusterIP
+  externalPort: 8000
+  internalPort: 8000
