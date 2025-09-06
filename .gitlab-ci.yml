@@ -81,3 +81,16 @@ apply:
     - export TF_VAR_vault_addr=$VAULT_ADDR
     - terraform init -backend-config=backend.tfvars
     - terraform apply -auto-approve
+
+destroy:
+  stage: deploy
+  <<: *vault_auth
+  when: manual
+  id_tokens:
+   VAULT_ID_TOKEN:
+    aud: $VAULT_ADDR
+  script:
+    - cd terraform/project
+    - export TF_VAR_vault_addr=$VAULT_ADDR
+    - terraform init
+    - terraform destroy -auto-approve
