@@ -1,5 +1,5 @@
 image:
-  repository: europe-west4-docker.pkg.dev/nsw-production-environment/rabbitmq-exporter/rabbitmq-exporter
+  repository: 123456789.dkr.ecr.eu-west-1.amazonaws.com/openinfra/demoapp
   tag: latest
   pullPolicy: IfNotPresent
 namespace: placeholder

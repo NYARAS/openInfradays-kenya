@@ -90,7 +90,7 @@ destroy:
    VAULT_ID_TOKEN:
     aud: $VAULT_ADDR
   script:
-    - cd terraform/project
+    - cd pg_instance
     - export TF_VAR_vault_addr=$VAULT_ADDR
-    - terraform init
+    - terraform init -backend-config=backend.tfvars
     - terraform destroy -auto-approve
