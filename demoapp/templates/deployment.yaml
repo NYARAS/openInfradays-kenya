@@ -37,3 +37,6 @@ spec:
         env:
           - name: DB_PORT
             value: {{ .Values.env.DB_PORT | quote }}
+        envFrom:
+          - secretRef:
+              name: "demo-secret"

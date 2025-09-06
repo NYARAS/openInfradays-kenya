@@ -14,7 +14,7 @@ resources:
     cpu: "200m"
     memory: "100Mi"
 env:
-  DB_PORT: placeholder
+  DB_PORT: "5432"
 
 service:
   name: demoapp

@@ -1,0 +1,5 @@
+bucket               = "calvine-demo-infra"
+key                  = "db-minimal-setup.json"
+region               = "us-east-1"
+workspace_key_prefix = "environment"
+dynamodb_table       = "terraform-lock-table"

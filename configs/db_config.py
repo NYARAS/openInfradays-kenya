@@ -5,7 +5,7 @@ DB_USER = os.environ.get("DB_USER", "demo")
 DB_PASSWORD = os.environ.get("DB_PASSWORD", "demo")
 DB_HOST = os.environ.get("DB_HOST", "localhost")
 DB_PORT = os.environ.get("DB_PORT", "5332")
-DB_NAME = os.environ.get("DB_NAME", "user")
+DB_NAME = os.environ.get("DB_NAME", "userdb")
 
 class Config:
     # Build the SQLAlchemy connection string dynamically

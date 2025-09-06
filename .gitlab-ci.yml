@@ -2,6 +2,9 @@ image: docker:26.1.1
 
 stages:
   - build-and-push
+  - plan
+  - deploy
+
 
 # We need dind as we are building docker container within docker container
 services:
@@ -21,7 +24,7 @@ variables:
 
 # Anchor setup of k8s access
 .vault_auth: &vault_auth
-  image: devopscalvine/infrastructure-helm3:0.0.6
+  image: devopscalvine/infrastructure-helm3:0.0.7
   id_tokens:
    VAULT_ID_TOKEN:
     aud: $VAULT_ADDR
@@ -36,6 +39,7 @@ variables:
 build-and-push:
   <<: *vault_auth
   stage: build-and-push
+  when: manual
   script:
     - |
       docker build --platform linux/arm64 -t "$IMAGE_REPO:$IMAGE_TAG" -t "$IMAGE_REPO:latest" .
@@ -48,3 +52,32 @@ build-and-push:
           docker push "$IMAGE_REPO:$IMAGE_TAG"
           docker push "$IMAGE_REPO:latest"
         fi
+
+plan:
+  <<: *vault_auth
+  stage: plan
+  artifacts:
+    paths:
+      - pg/instance/
+    expire_in: 1 day
+  id_tokens:
+   VAULT_ID_TOKEN:
+    aud: $VAULT_ADDR
+  script:
+    - cd pg_instance
+    - terraform init -backend-config=backend.tfvars
+    - export TF_VAR_vault_addr=$VAULT_ADDR
+    - terraform plan
+
+apply:
+  <<: *vault_auth
+  stage: deploy
+  when: manual
+  id_tokens:
+   VAULT_ID_TOKEN:
+    aud: $VAULT_ADDR
+  script:
+    - cd pg_instance
+    - export TF_VAR_vault_addr=$VAULT_ADDR
+    - terraform init -backend-config=backend.tfvars
+    - terraform apply -auto-approve
