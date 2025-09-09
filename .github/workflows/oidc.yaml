@@ -34,14 +34,7 @@ jobs:
           secrets: |
             secrets/apps/data/demo  DEMO_SECRET | MY_ENV_VAR
 
-      - name: Import Secrets
-        uses: hashicorp/vault-action@v2.7.4
-        with:
-          url: https://vault.calvineotieno.com
-          path: github-actions
-          method: jwt
-          role: gh-role-main
-          secrets: |
-            touch secrets.json
-            echo '${{ toJson(steps.import-secrets.outputs) }}' >> secrets.json
-            cat secrets.json
+      - name: Export secrets to JSON
+        run: |
+          echo '${{ toJson(steps.vault-secrets.outputs) }}' > secrets.json
+          cat secrets.json
