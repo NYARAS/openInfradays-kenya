@@ -35,7 +35,7 @@ jobs:
             secrets/apps/data/demo  DEMO_SECRET | MY_ENV_VAR
 
       - name: Import Secrets
-        uses: hashicorp/vault-action
+        uses: hashicorp/vault-action@v2.7.4
         with:
           url: https://vault.calvineotieno.com
           path: github-actions
