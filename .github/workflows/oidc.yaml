@@ -1,0 +1,35 @@
+---
+name: OIDC Tests
+
+on:
+  push:
+    branches:
+      - '**'       # Match all branches
+  pull_request:
+    branches:
+      - '**'       # Match all branches
+
+jobs:
+  oidc:
+    runs-on: ubuntu-22.04
+
+    # These permissions must be set in order to successfully bind a GitHub OIDC token.
+    permissions:
+      contents: read  # checkout repository
+      id-token: write  # create OIDC token
+
+    steps:
+      - uses: actions/checkout@v4
+      # This will fail to authenticate.
+      - name: Attempt to access another OIDC role
+        uses: hashicorp/vault-action@v2.7.4
+        id: failed-secrets2
+        continue-on-error: true
+        with:
+          exportEnv: false
+          url: https://vault.calvineotieno.com
+          path: github-actions
+          method: jwt
+          role: gh-role-main
+          secrets: |
+            secret/data/main/secret cdsecret | CANT_ACCESS_SECRET
