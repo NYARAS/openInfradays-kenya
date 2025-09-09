@@ -32,4 +32,4 @@ jobs:
           method: jwt
           role: gh-role-main
           secrets: |
-            secrets/apps/demo DEMO_SECRET | MY_ENV_VAR
+            secrets/data/apps/demo DEMO_SECRET | MY_ENV_VAR
