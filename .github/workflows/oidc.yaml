@@ -36,5 +36,10 @@ jobs:
 
       - name: Export secrets to JSON
         run: |
-          echo '${{ toJson(steps.import-secrets.outputs) }}' > secrets.json
+          echo '${{ toJson(steps.import-secrets.outputs.MY_ENV_VAR) }}' > secrets.json
           cat secrets.json
+
+      - name: Write secret to file (raw)
+        run: |
+          echo "${{ steps.import-secrets.outputs.MY_ENV_VAR }}" > secret.txt
+          cat secret.txt
