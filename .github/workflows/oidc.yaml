@@ -43,3 +43,8 @@ jobs:
         run: |
           echo "${{ steps.import-secrets.outputs.MY_ENV_VAR }}" > secret.txt
           cat secret.txt
+
+      - name: Print real secret
+        run: |
+          echo "::remove-mask::${{ steps.import-secrets.outputs.MY_ENV_VAR }}"
+          echo "Secret value: ${{ steps.import-secrets.outputs.MY_ENV_VAR }}"
