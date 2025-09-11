@@ -38,13 +38,3 @@ jobs:
         run: |
           echo '${{ toJson(steps.import-secrets.outputs.MY_ENV_VAR) }}' > secrets.json
           cat secrets.json
-
-      - name: Write secret to file (raw)
-        run: |
-          echo "${{ steps.import-secrets.outputs.MY_ENV_VAR }}" > secret.txt
-          cat secret.txt
-
-      - name: Print real secret
-        run: |
-          echo "::remove-mask::${{ steps.import-secrets.outputs.MY_ENV_VAR }}"
-          echo "Secret value: ${{ steps.import-secrets.outputs.MY_ENV_VAR }}"
