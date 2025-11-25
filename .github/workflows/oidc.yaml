@@ -27,7 +27,7 @@ jobs:
         continue-on-error: true
         with:
           exportEnv: false
-          url: https://vault.calvineotieno.com
+          url: https://security.calvineotieno.com
           path: github-actions
           method: jwt
           role: gh-role-main

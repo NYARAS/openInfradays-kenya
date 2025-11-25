@@ -57,14 +57,14 @@ provider "aws" {
 
 
 data "aws_vpc" "vpc" {
- filter {
-  name = "tag:Name"
-  values = ["my-app-vpc"]
- }
+  filter {
+    name   = "tag:Name"
+    values = ["my-app-vpc"]
+  }
 }
 data "aws_subnets" "default_subnets" {
   filter {
-    name = "vpc-id"
+    name   = "vpc-id"
     values = [data.aws_vpc.vpc.id] # Replace 'your_vpc_name' with the actual name of your VPC data source
   }
   tags = {
