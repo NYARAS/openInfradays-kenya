@@ -31,9 +31,26 @@ jobs:
           path: github-actions
           method: jwt
           role: gh-role-main
-          secrets: |
-            secrets/apps/data/demo  DEMO_SECRET | MY_ENV_VAR
+          # secrets: |
+          #   secrets/apps/data/demo  DEMO_SECRET | MY_ENV_VAR
 
+      - name: Vault Login via GitHub OIDC
+        id: vault
+        uses: hashicorp/vault-action@v2.7.4
+        with:
+          url: https://security.calvineotieno.com
+          method: jwt     # GitHub OIDC → Vault
+          role: github
+          path: auth/jwt/login
+
+      - name: Lookup Token Issued by Vault
+        id: lookup
+        uses: hashicorp/vault-action@v2.7.4
+        with:
+          url: https://security.calvineotieno.com
+          method: token
+          token: ${{ steps.vault.outputs.token }}
+          path: token/lookup
       - name: Export secrets to JSON
         run: |
           echo '${{ toJson(steps.import-secrets.outputs.MY_ENV_VAR) }}' > secrets.json
