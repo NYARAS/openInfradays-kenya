@@ -36,12 +36,13 @@ jobs:
           echo "Token length: ${#VAULT_TOKEN}"
           echo "Token length: ${#DATABASE_NAME}"
 
-      - name: Vault Token Lookup (using output)
+      - name: Vault Token Lookup
         run: |
           set -e
-          TOKEN="${{ steps.vault.outputs.token }}"
+
+          echo "Performing Vault token lookup…"
           curl -s \
-            --header "X-Vault-Token: $TOKEN" \
+            --header "X-Vault-Token: $VAULT_TOKEN" \
             https://security.calvineotieno.com/v1/auth/token/lookup-self | jq .
 
       - name: Import Secrets From Vault Using Repo Specific Role
