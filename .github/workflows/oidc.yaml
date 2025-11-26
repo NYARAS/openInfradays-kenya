@@ -4,44 +4,41 @@ name: OIDC Tests
 on:
   push:
     branches:
-      - '**'       # Match all branches
+      - '**'
   pull_request:
     branches:
-      - '**'       # Match all branches
+      - '**'
 
 jobs:
   oidc:
     runs-on: ubuntu-22.04
 
-    # These permissions must be set in order to successfully bind a GitHub OIDC token.
     permissions:
-      contents: read  # checkout repository
-      id-token: write  # create OIDC token
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
-      # This will fail to authenticate.
+
       - name: Attempt to access another OIDC role
         uses: hashicorp/vault-action@v2.7.4
         id: import-secrets
         continue-on-error: true
         with:
-          exportEnv: false
           url: https://security.calvineotieno.com
-          path: github-actions
           method: jwt
           role: gh-role-main
-          # secrets: |
-          #   secrets/apps/data/demo  DEMO_SECRET | MY_ENV_VAR
+          path: auth/jwt            # FIXED
+          exportEnv: false
 
       - name: Vault Login via GitHub OIDC
         id: vault
         uses: hashicorp/vault-action@v2.7.4
         with:
           url: https://security.calvineotieno.com
-          method: jwt     # GitHub OIDC → Vault
-          role: github
-          path: auth/jwt/login
+          method: jwt
+          role: gh-role-main
+          path: auth/jwt
 
       - name: Lookup Token Issued by Vault
         id: lookup
@@ -50,8 +47,9 @@ jobs:
           url: https://security.calvineotieno.com
           method: token
           token: ${{ steps.vault.outputs.token }}
-          path: token/lookup
+          path: auth/token/lookup   # FIXED: token lookup path
+
       - name: Export secrets to JSON
         run: |
-          echo '${{ toJson(steps.import-secrets.outputs.MY_ENV_VAR) }}' > secrets.json
+          echo '${{ toJson(steps.import-secrets.outputs) }}' > secrets.json
           cat secrets.json
