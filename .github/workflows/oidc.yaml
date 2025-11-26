@@ -31,3 +31,10 @@ jobs:
           path: github-actions
           method: jwt
           role: gh-role-main
+          secrets: |
+            secrets/apps/data/demo  DATABASE_NAME | MY_ENV_VAR
+
+      - name: Export secrets to JSON
+        run: |
+          echo '${{ toJson(steps.import-secrets.outputs.MY_ENV_VAR) }}' > secrets.json
+          cat secrets.json
