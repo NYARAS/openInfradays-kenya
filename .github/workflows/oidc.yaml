@@ -27,7 +27,7 @@ jobs:
           path: github-actions
           jwtGithubAudience: https://github.com/NYARAS
           secrets: |
-              secrets/apps/data/demo pizza
+              secrets/apps/data/demo DATABASE_NAME
 
       - name: Import Secrets From Vault Using Repo Specific Role
         id: import-secrets2
@@ -39,10 +39,10 @@ jobs:
           path: github-actions
           jwtGithubAudience: https://github.com/NYARAS
           secrets: |
-              secrets/apps/data/demo  pizza
+              secrets/apps/data/demo  DATABASE_NAME
 
 ####################### Test Output #################################################
       - name: Show variables variables for testing
         run: |
-          echo ${{ steps.import-secrets.outputs.pizza }} | sed 's/./& /g'
-          echo ${{ steps.import-secrets2.outputs.pizza }} | sed 's/./& /g'
+          echo ${{ steps.import-secrets.outputs.DATABASE_NAME }} | sed 's/./& /g'
+          echo ${{ steps.import-secrets2.outputs.DATABASE_NAME }} | sed 's/./& /g'
