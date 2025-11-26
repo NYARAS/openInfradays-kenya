@@ -31,6 +31,11 @@ jobs:
           secrets: |
               secrets/apps/data/demo DATABASE_NAME
 
+      - name: Debug Token (safe)
+        run: |
+          echo "Token length: ${#VAULT_TOKEN}"
+          echo "Token length: ${#DATABASE_NAME}"
+
       - name: Vault Token Lookup (using output)
         run: |
           set -e
