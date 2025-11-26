@@ -20,47 +20,16 @@ jobs:
     steps:
       # Step 1: Checkout repository
       - uses: actions/checkout@v4
-
-      # Step 2: Vault Login via GitHub OIDC
-      - name: Vault Login via GitHub OIDC
-        id: vault_login
-        uses: hashicorp/vault-action@v2.7.4
+      - name: Vault Login
+        uses: hashicorp/vault-action@v2
         with:
           url: https://security.calvineotieno.com
           method: jwt
-          role: gh-role-main
-          path: auth/github-actions/login  # Adjust if your Vault JWT login path differs
-          exportEnv: true                 # Exports VAULT_TOKEN in environment
-          exportToken: true               # Exports the token for downstream steps
-        # Fail immediately if login fails
-        continue-on-error: false
-
-      # Step 3: Verify Vault token
-      - name: Verify Vault Token
-        id: vault_verify
-        uses: hashicorp/vault-action@v2.7.4
-        with:
-          url: https://security.calvineotieno.com
-          method: token
-          token: ${{ steps.vault_login.outputs.token }}
-          path: auth/token/lookup
-        continue-on-error: false   # Fail immediately if token is invalid
-
-      # Step 4: Retrieve Vault secrets
-      - name: Get Vault Secret
-        id: import_secrets
-        uses: hashicorp/vault-action@v2.7.4
-        with:
-          url: https://security.calvineotieno.com
-          method: token
-          token: ${{ steps.vault_login.outputs.token }}
-          path: secrets/apps/data/demo
-          secrets: |
-            secrets/apps/data/demo  DATABASE_PASSWORD | DATABASE_PASSWORD
-        continue-on-error: false   # Fail immediately if secret does not exist
-
-      # Step 5: Export retrieved secrets to JSON
-      - name: Export secrets to JSON
+          role: github-actions-role
+          jwtGithubAudience: https://github.com/NYARAS
+      - name: Get Secret
         run: |
-          echo '${{ toJson(steps.import_secrets.outputs) }}' > secrets.json
-          cat secrets.json
+          VAULT_TOKEN=$(cat .vault-token) # Or use the output from vault-action
+          SECRET_VALUE=$(vault read -field=value secrets/apps/data/demo)
+          echo "::add-mask::$SECRET_VALUE"
+          echo "MY_SECRET=$SECRET_VALUE" >> $GITHUB_ENV
