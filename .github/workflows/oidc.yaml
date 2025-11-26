@@ -18,14 +18,12 @@ jobs:
       id-token: write  # generate OIDC token
 
     steps:
-      # Step 1: Checkout repository
-      - uses: actions/checkout@v4
       - name: Vault Login
         uses: hashicorp/vault-action@v2
         with:
           url: https://security.calvineotieno.com
           method: jwt
-          role: github-actions-role
+          role: gh-role-main
           jwtGithubAudience: https://github.com/NYARAS
       - name: Get Secret
         run: |
