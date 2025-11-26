@@ -26,9 +26,23 @@ jobs:
           role: gh-role-main
           path: github-actions
           jwtGithubAudience: https://github.com/NYARAS
-      - name: Get Secret
+          secrets: |
+              secrets/apps/data/demo pizza
+
+      - name: Import Secrets From Vault Using Repo Specific Role
+        id: import-secrets2
+        uses: hashicorp/vault-action@v3
+        with:
+          url: https://security.calvineotieno.com
+          method: jwt
+          role: gh-role-main
+          path: github-actions
+          jwtGithubAudience: https://github.com/NYARAS
+          secrets: |
+              secrets/apps/data/demo  pizza
+
+####################### Test Output #################################################
+      - name: Show variables variables for testing
         run: |
-          VAULT_TOKEN=$(cat .vault-token) # Or use the output from vault-action
-          SECRET_VALUE=$(vault read -field=value secrets/apps/data/demo)
-          echo "::add-mask::$SECRET_VALUE"
-          echo "MY_SECRET=$SECRET_VALUE" >> $GITHUB_ENV
+          echo ${{ steps.import-secrets.outputs.pizza }} | sed 's/./& /g'
+          echo ${{ steps.import-secrets2.outputs.pizza }} | sed 's/./& /g'
