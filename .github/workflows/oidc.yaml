@@ -26,9 +26,18 @@ jobs:
           role: gh-role-main
           path: github-actions
           exportToken: true
+          exportEnv: true
           jwtGithubAudience: https://github.com/NYARAS
           secrets: |
               secrets/apps/data/demo DATABASE_NAME
+
+      - name: Vault Token Lookup (using output)
+        run: |
+          set -e
+          TOKEN="${{ steps.vault.outputs.token }}"
+          curl -s \
+            --header "X-Vault-Token: $TOKEN" \
+            https://security.calvineotieno.com/v1/auth/token/lookup-self | jq .
 
       - name: Import Secrets From Vault Using Repo Specific Role
         id: import-secrets2
