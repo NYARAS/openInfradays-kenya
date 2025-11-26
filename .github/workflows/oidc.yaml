@@ -25,6 +25,7 @@ jobs:
           method: jwt
           role: gh-role-main
           path: github-actions
+          exportToken: true
           jwtGithubAudience: https://github.com/NYARAS
           secrets: |
               secrets/apps/data/demo DATABASE_NAME
