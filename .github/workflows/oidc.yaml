@@ -1,5 +1,4 @@
----
-name: OIDC Vault Access
+name: OIDC Vault Secrets
 
 on:
   push:
@@ -10,18 +9,19 @@ on:
       - '**'
 
 jobs:
-  vault-secrets:
+  oidc-vault:
     runs-on: ubuntu-22.04
 
+    # Permissions required for OIDC authentication
     permissions:
       contents: read   # checkout repository
       id-token: write  # generate OIDC token
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # Step 1: Checkout repository
+      - uses: actions/checkout@v4
 
-      # Authenticate with Vault using GitHub OIDC
+      # Step 2: Vault Login via GitHub OIDC
       - name: Vault Login via GitHub OIDC
         id: vault_login
         uses: hashicorp/vault-action@v2.7.4
@@ -29,48 +29,38 @@ jobs:
           url: https://security.calvineotieno.com
           method: jwt
           role: gh-role-main
-          path: github-actions
-          exportEnv: true   # Export VAULT_TOKEN to environment
-          outputToken: true # Save token in step outputs
-        # Fail immediately if authentication fails
+          path: auth/github-actions/login  # Adjust if your Vault JWT login path differs
+          exportEnv: true                 # Exports VAULT_TOKEN in environment
+          exportToken: true               # Exports the token for downstream steps
+        # Fail immediately if login fails
         continue-on-error: false
 
-      # Lookup Vault token to ensure it is valid
+      # Step 3: Verify Vault token
       - name: Verify Vault Token
-        id: vault_lookup
+        id: vault_verify
         uses: hashicorp/vault-action@v2.7.4
         with:
           url: https://security.calvineotieno.com
           method: token
           token: ${{ steps.vault_login.outputs.token }}
           path: auth/token/lookup
-        continue-on-error: false
+        continue-on-error: false   # Fail immediately if token is invalid
 
-      # Fetch secret(s) from Vault
-      - name: Fetch Vault Secrets
+      # Step 4: Retrieve Vault secrets
+      - name: Get Vault Secret
         id: import_secrets
         uses: hashicorp/vault-action@v2.7.4
         with:
           url: https://security.calvineotieno.com
-          method: jwt
-          role: gh-role-main
-          path: github-actions
-          exportEnv: true
+          method: token
+          token: ${{ steps.vault_login.outputs.token }}
+          path: secrets/apps/data/demo
           secrets: |
             secrets/apps/data/demo  DATABASE_PASSWORD | DATABASE_PASSWORD
-        continue-on-error: false
+        continue-on-error: false   # Fail immediately if secret does not exist
 
-      # Fail if the secret was not set
-      - name: Validate Secrets
-        run: |
-          if [ -z "${DATABASE_PASSWORD}" ]; then
-            echo "ERROR: DATABASE_PASSWORD is missing from Vault!"
-            exit 1
-          fi
-          echo "Successfully fetched DATABASE_PASSWORD from Vault"
-
-      # Optional: Export secrets to a JSON file
+      # Step 5: Export retrieved secrets to JSON
       - name: Export secrets to JSON
         run: |
-          echo '{"DATABASE_PASSWORD":"'"$DATABASE_PASSWORD"'"}' > secrets.json
+          echo '${{ toJson(steps.import_secrets.outputs) }}' > secrets.json
           cat secrets.json
