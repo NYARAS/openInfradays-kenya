@@ -1,40 +1,54 @@
 ---
-name: OIDC Tests
+name: OIDC Vault Authentication Tests
 
 on:
   push:
     branches:
-      - '**'       # Match all branches
+      - '**'
   pull_request:
     branches:
-      - '**'       # Match all branches
+      - '**'
 
 jobs:
   oidc:
     runs-on: ubuntu-22.04
 
-    # These permissions must be set in order to successfully bind a GitHub OIDC token.
+    # These permissions are required for OIDC authentication
     permissions:
-      contents: read  # checkout repository
-      id-token: write  # create OIDC token
+      contents: read      # required for checkout
+      id-token: write     # required for GitHub OIDC
 
     steps:
       - uses: actions/checkout@v4
-      # This will fail to authenticate.
-      - name: Attempt to access another OIDC role
+
+      # Authenticate to Vault via GitHub OIDC
+      - name: Vault Login via GitHub OIDC
+        id: vault-login
         uses: hashicorp/vault-action@v2.7.4
-        id: import-secrets
-        continue-on-error: false
         with:
-          exportEnv: false
           url: https://security.calvineotieno.com
-          path: github-actions
           method: jwt
           role: gh-role-main
-          secrets: |
-            secrets/apps/data/demo  DATABASE_NAME | MY_ENV_VAR
+          path: auth/jwt
+          failOnError: true   # Fail immediately if auth fails
+          exportEnv: false    # Do not export token to environment
 
+      # Retrieve secret from Vault
+      - name: Fetch Vault Secret
+        id: fetch-secret
+        uses: hashicorp/vault-action@v2.7.4
+        with:
+          url: https://security.calvineotieno.com
+          method: token
+          token: ${{ steps.vault-login.outputs.token }}
+          path: secrets/apps/data/demo
+          secrets: |
+            secrets/apps/data/demo  DATABASE_PASSWORD | DATABASE_PASSWORD
+          failOnError: true   # Fail immediately if secret cannot be fetched
+          exportEnv: true     # Export secrets to environment variables
+
+      # Optional: export secret to JSON for use in workflow
       - name: Export secrets to JSON
         run: |
-          echo '${{ toJson(steps.import-secrets.outputs.MY_ENV_VAR) }}' > secrets.json
+          echo "${DATABASE_PASSWORD}" > secrets.json
           cat secrets.json
