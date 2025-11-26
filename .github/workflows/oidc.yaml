@@ -24,6 +24,7 @@ jobs:
           url: https://security.calvineotieno.com
           method: jwt
           role: gh-role-main
+          path: auth/github-actions/login
           jwtGithubAudience: https://github.com/NYARAS
       - name: Get Secret
         run: |
