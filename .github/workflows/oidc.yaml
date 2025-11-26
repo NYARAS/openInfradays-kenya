@@ -24,7 +24,7 @@ jobs:
       - name: Attempt to access another OIDC role
         uses: hashicorp/vault-action@v2.7.4
         id: import-secrets
-        continue-on-error: true
+        continue-on-error: false
         with:
           exportEnv: false
           url: https://security.calvineotieno.com
