@@ -4,13 +4,13 @@ on:
  push:
    branches:
    - main
-   paths:
-   - pg_instance/**
+  #  paths:
+  #  - pg_instance/**
  pull_request:
    branches:
    - main
-   paths:
-   - pg_instance/**
+  #  paths:
+  #  - pg_instance/**
  
 env:
  # verbosity setting for Terraform logs
@@ -28,7 +28,7 @@ jobs:
    defaults:
      run:
        shell: bash
-       # We keep Terraform files in the terraform directory.
+       # We keep Terraform files in the pg_instance directory.
        working-directory: ./pg_instance
  
    steps:
